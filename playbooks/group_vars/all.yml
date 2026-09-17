@@ -1,0 +1,22 @@
+---
+# Loaded next to the playbook (AAP Controller inventory does not use git inventory).
+# Set vault_guest_admin_password on the Job Template (guest OS / PowerShell Direct).
+
+hyperv_direct_vm_name: Web-Direct-01
+hyperv_vswitch_name: Mgmt-External
+hyperv_vm_generation: 2
+hyperv_vm_cpu_count: 2
+hyperv_vm_memory_mb: 4096
+hyperv_vm_vhd_path: "F:\\VMs\\{{ hyperv_direct_vm_name }}\\{{ hyperv_direct_vm_name }}.vhdx"
+hyperv_parent_vhdx: "F:\\VMs\\Templates\\WindowsServer2025-Base.vhdx"
+hyperv_checkpoint_name: pre-webapp-install
+
+scvmm_vm_name: Web-SCVMM-01
+scvmm_template_name: WindowsServer2025-Web-Template
+scvmm_cloud_name: Production-Cloud
+scvmm_host_group: All Hosts
+scvmm_checkpoint_name: pre-webapp-install
+scvmm_server: scvmm01.corp.local
+
+guest_admin_user: Administrator
+checkpoint_description: "Safety snapshot before web application installation"
