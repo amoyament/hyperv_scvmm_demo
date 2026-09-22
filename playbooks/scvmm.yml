@@ -9,6 +9,7 @@
         name: "{{ scvmm_vm_name }}"
         template: "{{ scvmm_template_name }}"
         vm_host: "{{ scvmm_vm_host }}"
+        path: "{{ scvmm_vm_path }}"
         state: present
         vmm_server: "{{ scvmm_server }}"
 
