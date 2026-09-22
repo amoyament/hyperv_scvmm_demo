@@ -82,13 +82,19 @@
         wait_for_heartbeat: true
         wait_for_ip: true
 
+    - name: Stage guest bootstrap script on Hyper-V host
+      ansible.windows.win_copy:
+        src: guest-bootstrap.ps1
+        dest: C:\Windows\Temp\guest-bootstrap.ps1
+
     - name: Copy guest bootstrap script into VM
       microsoft.hyperv.hv_guest_copy:
         vm_name: "{{ hyperv_direct_vm_name }}"
         guest_credential:
           username: "{{ guest_admin_user }}"
           password: "{{ guest_admin_password }}"
-        src: guest-bootstrap.ps1
+        action: copy_in
+        src: C:\Windows\Temp\guest-bootstrap.ps1
         dest: C:\Windows\Temp\guest-bootstrap.ps1
 
     - name: Run guest bootstrap script
@@ -199,13 +205,19 @@
         wait_for_heartbeat: true
         wait_for_ip: true
 
+    - name: Stage guest bootstrap script on Hyper-V host
+      ansible.windows.win_copy:
+        src: guest-bootstrap.ps1
+        dest: C:\Windows\Temp\guest-bootstrap.ps1
+
     - name: Copy guest bootstrap script into VM
       microsoft.hyperv.hv_guest_copy:
         vm_name: "{{ scvmm_vm_name }}"
         guest_credential:
           username: "{{ guest_admin_user }}"
           password: "{{ guest_admin_password }}"
-        src: guest-bootstrap.ps1
+        action: copy_in
+        src: C:\Windows\Temp\guest-bootstrap.ps1
         dest: C:\Windows\Temp\guest-bootstrap.ps1
 
     - name: Run guest bootstrap script
