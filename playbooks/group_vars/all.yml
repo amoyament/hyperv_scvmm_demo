@@ -19,5 +19,6 @@ scvmm_host_group: All Hosts
 scvmm_checkpoint_name: pre-webapp-install
 scvmm_server: scvmm01.corp.local
 
-guest_admin_user: Administrator
+# Local guest account. Bare "Administrator" is treated as CORP\Administrator on the domain-joined host.
+guest_admin_user: '.\Administrator'
 checkpoint_description: "Safety snapshot before web application installation"

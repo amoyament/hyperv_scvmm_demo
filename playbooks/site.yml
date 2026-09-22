@@ -96,6 +96,10 @@
         action: copy_in
         src: C:\Windows\Temp\guest-bootstrap.ps1
         dest: C:\Windows\Temp\guest-bootstrap.ps1
+      register: hyperv_guest_copy
+      until: hyperv_guest_copy is succeeded
+      retries: 30
+      delay: 20
 
     - name: Run guest bootstrap script
       microsoft.hyperv.hv_guest_command:
@@ -219,6 +223,10 @@
         action: copy_in
         src: C:\Windows\Temp\guest-bootstrap.ps1
         dest: C:\Windows\Temp\guest-bootstrap.ps1
+      register: scvmm_guest_copy
+      until: scvmm_guest_copy is succeeded
+      retries: 30
+      delay: 20
 
     - name: Run guest bootstrap script
       microsoft.hyperv.hv_guest_command:
