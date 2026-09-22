@@ -1,5 +1,5 @@
 ---
-- name: "Standard web server build with Hyper-V"
+- name: Provision web server with Hyper-V
   hosts: standalone_hyperv
   gather_facts: false
 

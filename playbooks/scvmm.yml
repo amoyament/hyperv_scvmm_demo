@@ -1,5 +1,5 @@
 ---
-- name: "Standard web server build with SCVMM"
+- name: Provision web server with SCVMM
   hosts: scvmm_server
   gather_facts: false
 
@@ -8,7 +8,7 @@
       microsoft.scvmm.scvmm_vm:
         name: "{{ scvmm_vm_name }}"
         template: "{{ scvmm_template_name }}"
-        cloud: "{{ scvmm_cloud_name }}"
+        vm_host: "{{ scvmm_vm_host }}"
         state: present
         vmm_server: "{{ scvmm_server }}"
 
@@ -59,7 +59,7 @@
         state: present
         vmm_server: "{{ scvmm_server }}"
 
-- name: "Path 2b — Guest bootstrap for SCVMM-deployed VM (PowerShell Direct)"
+- name: Configure web server guest (SCVMM)
   hosts: scvmm_hyperv_hosts
   gather_facts: false
 
