@@ -1,0 +1,116 @@
+---
+- name: "Standard web server build with Hyper-V"
+  hosts: standalone_hyperv
+  gather_facts: false
+
+  vars:
+    guest_admin_password: "{{ vault_guest_admin_password }}"
+
+  tasks:
+    - name: Create Gen2 virtual machine
+      microsoft.hyperv.hv_vm:
+        name: "{{ hyperv_direct_vm_name }}"
+        state: present
+        generation: "{{ hyperv_vm_generation }}"
+        memory_startup_bytes: "{{ hyperv_vm_memory_mb }}MB"
+        notes: "Provisioned by Ansible — Option B demo (Hyper-V direct)"
+
+    - name: Configure virtual CPU count
+      microsoft.hyperv.hv_processor:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        count: "{{ hyperv_vm_cpu_count }}"
+
+    - name: Configure virtual memory
+      microsoft.hyperv.hv_memory:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        startup_bytes: "{{ hyperv_vm_memory_mb }}MB"
+
+    - name: Ensure VM disk folder exists
+      ansible.windows.win_file:
+        path: "{{ hyperv_vm_vhd_dir }}"
+        state: directory
+
+    - name: Create differencing disk from parent image
+      microsoft.hyperv.hv_vhd:
+        path: "{{ hyperv_vm_vhd_path }}"
+        parent_path: "{{ hyperv_parent_vhdx }}"
+        vhd_type: Differencing
+        state: present
+
+    - name: Attach virtual hard disk
+      microsoft.hyperv.hv_hard_disk:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        path: "{{ hyperv_vm_vhd_path }}"
+        controller_type: SCSI
+        controller_number: 0
+        controller_location: 0
+        state: present
+
+    - name: Connect network adapter to virtual switch
+      microsoft.hyperv.hv_network_adapter:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        switch_name: "{{ hyperv_vswitch_name }}"
+
+    - name: Power on virtual machine
+      microsoft.hyperv.hv_vm_state:
+        name: "{{ hyperv_direct_vm_name }}"
+        state: running
+
+    - name: Wait for guest agent and IP address
+      microsoft.hyperv.hv_vm_guest_wait:
+        name: "{{ hyperv_direct_vm_name }}"
+        timeout: 600
+        wait_for_heartbeat: true
+        wait_for_ip: true
+
+    - name: Stage guest bootstrap script on Hyper-V host
+      ansible.windows.win_copy:
+        src: guest-bootstrap.ps1
+        dest: C:\Windows\Temp\guest-bootstrap.ps1
+
+    - name: Copy guest bootstrap script into VM
+      microsoft.hyperv.hv_guest_copy:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        guest_credential:
+          username: "{{ guest_admin_user }}"
+          password: "{{ guest_admin_password }}"
+        action: copy_in
+        src: C:\Windows\Temp\guest-bootstrap.ps1
+        dest: C:\Windows\Temp\guest-bootstrap.ps1
+      register: hyperv_guest_copy
+      until: hyperv_guest_copy is succeeded
+      retries: 30
+      delay: 20
+
+    - name: Run guest bootstrap script
+      microsoft.hyperv.hv_guest_command:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        guest_credential:
+          username: "{{ guest_admin_user }}"
+          password: "{{ guest_admin_password }}"
+        script: "& C:\\Windows\\Temp\\guest-bootstrap.ps1"
+      register: hyperv_guest_bootstrap
+
+    - name: Display guest bootstrap output
+      ansible.builtin.debug:
+        var: hyperv_guest_bootstrap.stdout
+
+    - name: Create safety checkpoint before web app installation
+      microsoft.hyperv.hv_checkpoint:
+        vm_name: "{{ hyperv_direct_vm_name }}"
+        name: "{{ hyperv_checkpoint_name }}"
+        state: present
+
+    - name: Verify virtual machine state
+      microsoft.hyperv.hv_vm_info:
+        name: "{{ hyperv_direct_vm_name }}"
+      register: hyperv_vm_facts
+
+    - name: Display Hyper-V VM facts
+      ansible.builtin.debug:
+        msg: "VM {{ hyperv_direct_vm_name }} is {{ hyperv_vm_facts.vms[0].state | default('present') }}"
+
+# Path 1 — Hyper-V direct (microsoft.hyperv)
+# AAP: Job Template playbook = playbooks/hyperv.yml
+# Inventory group: standalone_hyperv
+# Extra vars: vault_guest_admin_password
