@@ -68,12 +68,24 @@
     guest_admin_password: "{{ vault_guest_admin_password }}"
 
   tasks:
-    - name: Wait for guest agent and IP address
+    - name: Wait for guest heartbeat
       microsoft.hyperv.hv_vm_guest_wait:
         name: "{{ scvmm_vm_name }}"
         timeout: 600
         wait_for_heartbeat: true
-        wait_for_ip: true
+        wait_for_ip: false
+
+    - name: Wait for guest OS to accept Administrator login
+      microsoft.hyperv.hv_guest_command:
+        vm_name: "{{ scvmm_vm_name }}"
+        guest_credential:
+          username: "{{ guest_admin_user }}"
+          password: "{{ guest_admin_password }}"
+        script: hostname
+      register: scvmm_guest_ready
+      until: scvmm_guest_ready is succeeded
+      retries: 60
+      delay: 20
 
     - name: Stage guest bootstrap script on Hyper-V host
       ansible.windows.win_copy:
@@ -89,10 +101,6 @@
         action: copy_in
         src: C:\Windows\Temp\guest-bootstrap.ps1
         dest: C:\Windows\Temp\guest-bootstrap.ps1
-      register: scvmm_guest_copy
-      until: scvmm_guest_copy is succeeded
-      retries: 30
-      delay: 20
 
     - name: Run guest bootstrap script
       microsoft.hyperv.hv_guest_command:
