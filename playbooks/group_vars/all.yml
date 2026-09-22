@@ -7,7 +7,8 @@ hyperv_vswitch_name: Mgmt-External
 hyperv_vm_generation: 2
 hyperv_vm_cpu_count: 2
 hyperv_vm_memory_mb: 4096
-hyperv_vm_vhd_path: "F:\\VMs\\{{ hyperv_direct_vm_name }}\\{{ hyperv_direct_vm_name }}.vhdx"
+hyperv_vm_vhd_dir: "F:\\VMs\\{{ hyperv_direct_vm_name }}"
+hyperv_vm_vhd_path: "{{ hyperv_vm_vhd_dir }}\\{{ hyperv_direct_vm_name }}.vhdx"
 hyperv_parent_vhdx: "F:\\VMs\\Templates\\WindowsServer2025-Base.vhdx"
 hyperv_checkpoint_name: pre-webapp-install
 

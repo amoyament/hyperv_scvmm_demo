@@ -44,15 +44,26 @@
         vm_name: "{{ hyperv_direct_vm_name }}"
         startup_bytes: "{{ hyperv_vm_memory_mb }}MB"
 
+    - name: Ensure VM disk folder exists
+      ansible.windows.win_file:
+        path: "{{ hyperv_vm_vhd_dir }}"
+        state: directory
+
+    - name: Create differencing disk from parent image
+      microsoft.hyperv.hv_vhd:
+        path: "{{ hyperv_vm_vhd_path }}"
+        parent_path: "{{ hyperv_parent_vhdx }}"
+        vhd_type: Differencing
+        state: present
+
     - name: Attach virtual hard disk
       microsoft.hyperv.hv_hard_disk:
         vm_name: "{{ hyperv_direct_vm_name }}"
         path: "{{ hyperv_vm_vhd_path }}"
-        parent_path: "{{ hyperv_parent_vhdx }}"
-        operation: attach
         controller_type: SCSI
         controller_number: 0
         controller_location: 0
+        state: present
 
     - name: Connect network adapter to virtual switch
       microsoft.hyperv.hv_network_adapter:
