@@ -139,19 +139,6 @@
     - scvmm
 
   tasks:
-    - name: Query placement rating for template deployment
-      microsoft.scvmm.scvmm_host_rating_info:
-        vm_template: "{{ scvmm_template_name }}"
-        host_group: "{{ scvmm_host_group }}"
-        vmm_server: "{{ scvmm_server }}"
-      register: scvmm_placement
-      ignore_errors: true  # Module may require specific lab config; skip if unavailable
-
-    - name: Display placement ratings
-      ansible.builtin.debug:
-        var: scvmm_placement
-      when: scvmm_placement is not failed
-
     - name: Deploy virtual machine from SCVMM template
       microsoft.scvmm.scvmm_vm:
         name: "{{ scvmm_vm_name }}"
@@ -162,10 +149,23 @@
         state: present
         vmm_server: "{{ scvmm_server }}"
 
+    - name: Query placement rating
+      microsoft.scvmm.scvmm_host_rating_info:
+        vm_name: "{{ scvmm_vm_name }}"
+        host_group: "{{ scvmm_host_group }}"
+        vmm_server: "{{ scvmm_server }}"
+      register: scvmm_placement
+      ignore_errors: true
+
+    - name: Display placement ratings
+      ansible.builtin.debug:
+        var: scvmm_placement
+      when: scvmm_placement is not failed
+
     - name: Power on SCVMM-managed virtual machine
       microsoft.scvmm.scvmm_vm_state:
         name: "{{ scvmm_vm_name }}"
-        state: running
+        state: started
         vmm_server: "{{ scvmm_server }}"
 
     - name: Verify SCVMM virtual machine details
@@ -178,7 +178,7 @@
       ansible.builtin.debug:
         msg: >-
           VM {{ scvmm_vm_name }} deployed to host
-          {{ scvmm_vm_facts.vms[0].host | default('unknown') }}
+          {{ (scvmm_vm_facts.virtual_machines | default(scvmm_vm_facts.vms | default([])))[0].host | default('unknown') }}
 
     - name: Create safety checkpoint before web app installation
       microsoft.scvmm.scvmm_vm_checkpoint:
