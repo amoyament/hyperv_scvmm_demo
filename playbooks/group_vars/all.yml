@@ -14,6 +14,7 @@ hyperv_checkpoint_name: pre-webapp-install
 
 scvmm_vm_name: Web-SCVMM-01
 scvmm_template_name: WindowsServer2025-Web-Template
+scvmm_vm_host: hv-managed.corp.local
 scvmm_cloud_name: Production-Cloud
 scvmm_host_group: All Hosts
 scvmm_checkpoint_name: pre-webapp-install
